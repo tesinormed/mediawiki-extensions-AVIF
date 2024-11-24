@@ -61,6 +61,15 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 			$this->setLastError( sprintf( 'file not found: %s', $this->params['title'] ) );
 			return false;
 		}
+		// make sure the file is supported to be transformed
+		if ( !in_array(
+			needle: $localFile->getMimeType(),
+			haystack: self::SUPPORTED_MIME_TYPES,
+			strict: true
+		) ) {
+			// fail silently
+			return false;
+		}
 
 		// get the parameters
 		$width = $this->params['width'] ?? 0;

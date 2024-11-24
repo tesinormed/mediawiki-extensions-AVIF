@@ -4,9 +4,9 @@ A MediaWiki extension which automatically generates AVIF versions of images and 
 
 ## System administrator guide
 
-|  Configuration option   | Description                                       | Default            |
-|:-----------------------:|---------------------------------------------------|--------------------|
-| `$wgAVIFExecutablePath` | The path to the `avifenc` executable from libavif | `/usr/bin/avifenc` |
+|  Configuration option   | Description                      | Default            |
+|:-----------------------:|----------------------------------|--------------------|
+| `$wgAVIFExecutablePath` | Path to the `avifenc` executable | `/usr/bin/avifenc` |
 
 ### System requirements
 
@@ -36,3 +36,7 @@ No action is required to automatically generate AVIF versions of your images.
 Currently, only JPEG and PNG images can be converted.
 
 To find the AVIF version of your file, simply add `.avif` to the file URL (for example, `https://example.com/images/a.png.avif`).
+
+## Credits
+
+- [Octfx](https://github.com/octfx) for creating the [WebP](https://github.com/octfx/mediawiki-extension-WebP) extension
