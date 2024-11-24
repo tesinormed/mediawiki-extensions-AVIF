@@ -4,5 +4,5 @@
 			"tesinormed"
 		]
 	},
-	"avif-desc": "Automatically generates AVIF versions of images"
+	"avif-desc": "Automatically generates AVIF versions of images and thumbnails"
 }

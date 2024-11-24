@@ -23,16 +23,22 @@ class GenerateAvifFromFiles extends Maintenance {
 	public function execute(): void {
 		$this->output( "generating AVIF files...\n" );
 
-		$replicaDatabase = MediaWikiServices::getInstance()->getDBLoadBalancer()
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()
 			->getMaintenanceConnectionRef( DB_REPLICA );
 
 		$titles = $this->hasOption( 'titles' ) ? $this->getOption( 'titles' ) : [];
 
 		if ( empty( $titles ) ) {
-			$titles = $replicaDatabase->newSelectQueryBuilder()
-				->select( [ 'page_title' ] )
-				->from( 'page' )
-				->where( [ 'page_namespace' => NS_FILE ] )
+			$titles = $dbr->newSelectQueryBuilder()
+				->select( [ 'img_name' ] )
+				->from( 'image' )
+				->where(
+					$dbr->expr( 'img_major_mime', '=', 'image' )
+					->andExpr(
+						$dbr->expr( 'img_minor_mime', '=', 'png' )
+						->or( 'img_minor_mime', '=', 'jpeg' )
+					)
+				)
 				->caller( __METHOD__ )
 				->fetchFieldValues();
 		}
