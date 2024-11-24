@@ -17,19 +17,19 @@ class GenerateAvifFromFiles extends Maintenance {
 	public function __construct() {
 		parent::__construct();
 		$this->requireExtension( 'AVIF' );
-		$this->addOption( 'titles', 'Comma-seperated list of titles to generate', multiOccurrence: true );
+		$this->addOption( 'file', 'File(s) to regenerate AVIF versions of', multiOccurrence: true );
 	}
 
 	public function execute(): void {
-		$this->output( "generating AVIF files...\n" );
+		$this->output( "queueing AVIF file generation jobs...\n" );
 
 		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()
 			->getMaintenanceConnectionRef( DB_REPLICA );
 
-		$titles = $this->hasOption( 'titles' ) ? $this->getOption( 'titles' ) : [];
+		$files = $this->hasOption( 'file' ) ? $this->getOption( 'file' ) : [];
 
-		if ( empty( $titles ) ) {
-			$titles = $dbr->newSelectQueryBuilder()
+		if ( empty( $files ) ) {
+			$files = $dbr->newSelectQueryBuilder()
 				->select( [ 'img_name' ] )
 				->from( 'image' )
 				->where(
@@ -44,8 +44,8 @@ class GenerateAvifFromFiles extends Maintenance {
 		}
 
 		$jobQueueGroup = MediaWikiServices::getInstance()->getJobQueueGroupFactory()->makeJobQueueGroup();
-		foreach ( $titles as $title ) {
-			$this->output( "generating AVIF version of $title\n" );
+		foreach ( $files as $title ) {
+			$this->output( "queued $title\n" );
 			$jobQueueGroup->push( new AvifTransformJob( [
 				'title' => Title::makeTitleSafe( NS_FILE, $title ),
 			] ) );
