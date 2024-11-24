@@ -1,0 +1,71 @@
+{
+	"name": "AVIF",
+	"version": "0.1.0",
+	"author": [
+		"tesinormed"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:AVIF",
+	"descriptionmsg": "avif-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "media",
+	"requires": {
+		"MediaWiki": ">= 1.42.0",
+		"extensions": {
+			"PictureHtmlSupport": "*"
+		},
+		"platform": {
+			"php": ">= 8.1",
+			"ext-imagick": "*"
+		}
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\AVIF\\": "src/"
+	},
+	"config": {
+		"AVIFExecutablePath": {
+			"value": "/usr/bin/avifenc"
+		}
+	},
+	"ConfigRegistry": {
+		"avif": "GlobalVarConfig::newInstance"
+	},
+	"HookHandlers": {
+		"file": {
+			"class": "MediaWiki\\Extension\\AVIF\\Hook\\FileHooks",
+			"services": [
+				"JobQueueGroup",
+				"RepoGroup"
+			]
+		},
+		"bitmap": {
+			"class": "MediaWiki\\Extension\\AVIF\\Hook\\BitmapHooks",
+			"services": [
+				"JobQueueGroup"
+			]
+		},
+		"thumbnail": {
+			"class": "MediaWiki\\Extension\\AVIF\\Hook\\ThumbnailHooks",
+			"services": [
+				"RepoGroup",
+				"JobQueueGroup"
+			]
+		}
+	},
+	"Hooks": {
+		"UploadComplete": "file",
+		"PageMoveComplete": "file",
+		"FileDeleteComplete": "file",
+		"FileUndeleteComplete": "file",
+		"BitmapHandlerTransform": "bitmap",
+		"PictureHtmlSupportBeforeProduceHtml": "thumbnail"
+	},
+	"JobClasses": {
+		"AvifTransform": "MediaWiki\\Extension\\AVIF\\Job\\AvifTransformJob"
+	},
+	"MessagesDirs": {
+		"BoilerPlate": [
+			"i18n"
+		]
+	},
+	"manifest_version": 2
+}
