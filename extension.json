@@ -1,6 +1,6 @@
 {
 	"name": "AVIF",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"author": [
 		"tesinormed"
 	],
@@ -63,7 +63,7 @@
 		"AvifTransform": "MediaWiki\\Extension\\AVIF\\Job\\AvifTransformJob"
 	},
 	"MessagesDirs": {
-		"BoilerPlate": [
+		"AVIF": [
 			"i18n"
 		]
 	},
