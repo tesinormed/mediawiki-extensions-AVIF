@@ -17,7 +17,7 @@ class GenerateAvifFromFiles extends Maintenance {
 	public function __construct() {
 		parent::__construct();
 		$this->requireExtension( 'AVIF' );
-		$this->addOption( 'titles', 'Comma-seperated list of titles to generate' );
+		$this->addOption( 'titles', 'Comma-seperated list of titles to generate', multiOccurrence: true );
 	}
 
 	public function execute(): void {
