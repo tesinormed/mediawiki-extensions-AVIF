@@ -6,11 +6,11 @@ use JobQueueGroup;
 use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
 use MediaWiki\Hook\FileDeleteCompleteHook;
 use MediaWiki\Hook\FileUndeleteCompleteHook;
+use MediaWiki\Hook\FileUploadHook;
 use MediaWiki\Hook\PageMoveCompleteHook;
-use MediaWiki\Hook\UploadCompleteHook;
 use RepoGroup;
 
-class FileHooks implements UploadCompleteHook, PageMoveCompleteHook, FileDeleteCompleteHook, FileUndeleteCompleteHook {
+class FileHooks implements FileUploadHook, PageMoveCompleteHook, FileDeleteCompleteHook, FileUndeleteCompleteHook {
 	private JobQueueGroup $jobQueueGroup;
 	private RepoGroup $repoGroup;
 
@@ -19,17 +19,11 @@ class FileHooks implements UploadCompleteHook, PageMoveCompleteHook, FileDeleteC
 		$this->repoGroup = $repoGroup;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	public function onUploadComplete( $uploadBase ): void {
-		// make sure the file exists locally
-		if ( $uploadBase->getLocalFile() === null ) {
-			return;
-		}
+	/** @inheritDoc */
+	public function onFileUpload( $file, $reupload, $hasDescription ): void {
 		// make sure the file is supported to be transformed
 		if ( !in_array(
-			needle: $uploadBase->getLocalFile()->getMimeType(),
+			needle: $file->getMimeType(),
 			haystack: AvifTransformJob::SUPPORTED_MIME_TYPES,
 			strict: true
 		) ) {
@@ -38,18 +32,17 @@ class FileHooks implements UploadCompleteHook, PageMoveCompleteHook, FileDeleteC
 
 		// run the job
 		$this->jobQueueGroup->push( new AvifTransformJob( [
-			'title' => $uploadBase->getTitle(),
+			'title' => $file->getTitle(),
 		] ) );
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function onPageMoveComplete( $old, $new, $user, $pageid, $redirid, $reason, $revision ): void {
 		// get the new file
-		$newFile = $this->repoGroup->findFile( $new, [
-			'ignoreRedirect' => true, 'latest' => true
-		] );
+		$newFile = $this->repoGroup->findFile(
+			$new,
+			[ 'ignoreRedirect' => true, 'latest' => true ]
+		);
 		// make sure it was found
 		if ( $newFile === false ) {
 			return;
@@ -91,9 +84,7 @@ class FileHooks implements UploadCompleteHook, PageMoveCompleteHook, FileDeleteC
 		}
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function onFileDeleteComplete( $file, $oldimage, $article, $user, $reason ): void {
 		$fileRepository = $file->getRepo();
 
@@ -117,16 +108,24 @@ class FileHooks implements UploadCompleteHook, PageMoveCompleteHook, FileDeleteC
 		}
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function onFileUndeleteComplete( $title, $fileVersions, $user, $reason ): void {
 		// find the undeleted file
-		$file = $this->repoGroup->findFile( $title, [
-			'ignoreRedirect' => true, 'latest' => true
-		] );
+		$file = $this->repoGroup->getLocalRepo()->findFile(
+			$title,
+			[ 'ignoreRedirect' => true, 'latest' => true ]
+		);
 		// and if it exists
 		if ( $file !== false ) {
+			// make sure the file is supported to be transformed
+			if ( !in_array(
+				needle: $file->getMimeType(),
+				haystack: AvifTransformJob::SUPPORTED_MIME_TYPES,
+				strict: true
+			) ) {
+				return;
+			}
+
 			// regenerate the AVIF version
 			$this->jobQueueGroup->push( new AvifTransformJob( [
 				'title' => $title,

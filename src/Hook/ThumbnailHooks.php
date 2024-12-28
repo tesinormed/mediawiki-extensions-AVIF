@@ -18,9 +18,7 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 		$this->jobQueueGroup = $jobQueueGroup;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function onPictureHtmlSupportBeforeProduceHtml( ThumbnailImage $thumbnail, array &$sources ): void {
 		// don't use a thumbnail for a source file image
 		if ( $thumbnail->fileIsSource() ) {
@@ -28,6 +26,15 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 		}
 
 		$thumbnailFile = $thumbnail->getFile();
+		// make sure the file is supported
+		if ( !in_array(
+			needle: $thumbnailFile->getMimeType(),
+			haystack: AvifTransformJob::SUPPORTED_MIME_TYPES,
+			strict: true
+		) ) {
+			return;
+		}
+
 		// get the width and height of the requested thumbnail
 		$width = $thumbnail->getWidth();
 		$height = $thumbnail->getHeight();
@@ -47,7 +54,7 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 				'height' => $height,
 			];
 		} else {
-			// process the thumbnail
+			// process the thumbnail for next time
 			$this->jobQueueGroup->push( new AvifTransformJob( [
 				'title' => $thumbnail->getFile()->getTitle(),
 				'width' => $width,

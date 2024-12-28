@@ -54,20 +54,12 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		// get the local file repository
 		/** @var LocalRepo $localFileRepository */
 		$localFileRepository = MediaWikiServices::getInstance()->getRepoGroup()->getLocalRepo();
-		$localFile = $localFileRepository->findFile( $this->params['title'], [
-			'ignoreRedirect' => true, 'latest' => true
-		] );
+		$localFile = $localFileRepository->findFile(
+			$this->params['title'],
+			[ 'ignoreRedirect' => true, 'latest' => true ]
+		);
 		if ( $localFile === false ) {
 			$this->setLastError( sprintf( 'file not found: %s', $this->params['title'] ) );
-			return false;
-		}
-		// make sure the file is supported to be transformed
-		if ( !in_array(
-			needle: $localFile->getMimeType(),
-			haystack: self::SUPPORTED_MIME_TYPES,
-			strict: true
-		) ) {
-			// fail silently
 			return false;
 		}
 
@@ -112,7 +104,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 	): bool {
 		$inputFilePath = $inputFile->getLocalRefPath();
 		// if the file needs to be resized
-		if ( $width != 0 ) {
+		if ( $width != 0 || $height != 0 ) {
 			// create a temporary file to output the resized file into
 			$temporaryFile = $this->createTemporaryFile( $inputFile->getExtension() );
 			// resize the file

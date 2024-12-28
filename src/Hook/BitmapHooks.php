@@ -13,9 +13,7 @@ class BitmapHooks implements BitmapHandlerTransformHook {
 		$this->jobQueueGroup = $jobQueueGroup;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	/** @inheritDoc */
 	public function onBitmapHandlerTransform( $handler, $image, &$scalerParams, &$mto ): void {
 		// make sure the image is supported to be transformed
 		if ( !in_array(
