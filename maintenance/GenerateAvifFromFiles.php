@@ -42,7 +42,7 @@ class GenerateAvifFromFiles extends Maintenance {
 				->fetchFieldValues();
 		}
 
-		$jobQueueGroup = MediaWikiServices::getInstance()->getJobQueueGroupFactory()->makeJobQueueGroup();
+		$jobQueueGroup = MediaWikiServices::getInstance()->getJobQueueGroup();
 		foreach ( $files as $title ) {
 			$this->output( "queued $title\n" );
 			$jobQueueGroup->lazyPush( new AvifTransformJob( [

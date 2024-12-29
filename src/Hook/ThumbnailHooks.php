@@ -9,6 +9,7 @@ use MediaWiki\Extension\PictureHtmlSupport\Hook\PictureHtmlSupportBeforeProduceH
 use RepoGroup;
 use ThumbnailImage;
 
+/** @noinspection PhpUnused */
 class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 	private RepoGroup $repoGroup;
 	private JobQueueGroup $jobQueueGroup;
@@ -56,8 +57,7 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 		} else {
 			// process the thumbnail for next time
 			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'namespace' => NS_FILE,
-				'title' => $thumbnailFile->getTitle()->getDBkey(),
+				'fileName' => $thumbnailFile->getName(),
 				'width' => $width,
 				'height' => $height,
 			] ) );

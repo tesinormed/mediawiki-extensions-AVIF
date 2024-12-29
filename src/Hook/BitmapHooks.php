@@ -6,6 +6,7 @@ use JobQueueGroup;
 use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
 use MediaWiki\Hook\BitmapHandlerTransformHook;
 
+/** @noinspection PhpUnused */
 class BitmapHooks implements BitmapHandlerTransformHook {
 	private JobQueueGroup $jobQueueGroup;
 
@@ -26,8 +27,7 @@ class BitmapHooks implements BitmapHandlerTransformHook {
 
 		// run the job
 		$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-			'namespace' => NS_FILE,
-			'title' => $image->getTitle()->getDBkey(),
+			'fileName' => $image->getName(),
 			'width' => $scalerParams['physicalWidth'],
 			'height' => $scalerParams['physicalHeight'],
 		] ) );

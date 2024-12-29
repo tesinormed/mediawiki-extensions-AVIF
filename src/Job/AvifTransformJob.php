@@ -44,7 +44,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 			return false;
 		}
 		if ( !is_executable( self::getExtensionConfig()->get( 'AVIFExecutablePath' ) ) ) {
-			$this->setLastError( 'avifenc is not executable / does not exist' );
+			$this->setLastError( 'avifenc is not executable or does not exist' );
 			return false;
 		}
 		if ( !extension_loaded( 'imagick' ) ) {
@@ -53,14 +53,15 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		}
 
 		// get the local file repository
+		$repoGroup = MediaWikiServices::getInstance()->getRepoGroup();
 		/** @var LocalRepo $localFileRepository */
-		$localFileRepository = MediaWikiServices::getInstance()->getRepoGroup()->getLocalRepo();
-		$localFile = $localFileRepository->findFile(
-			$this->getTitle(),
+		$localFileRepository = $repoGroup->getLocalRepo();
+		$localFile = $repoGroup->findFile(
+			$this->params['fileName'],
 			[ 'ignoreRedirect' => true, 'latest' => true ]
 		);
 		if ( $localFile === false ) {
-			$this->setLastError( sprintf( 'file not found: %s', $this->getTitle()->getDBkey() ) );
+			$this->setLastError( sprintf( 'file not found: %s', $this->params['fileName'] ) );
 			return false;
 		}
 		$localFile->load( IDBAccessObject::READ_LATEST );
@@ -87,6 +88,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 				flags: FileRepo::OVERWRITE | FileRepo::SKIP_LOCKING
 			);
 		} else {
+			// thumbnail
 			$storageResult = $localFileRepository->store(
 				$temporaryFile,
 				dstZone: 'thumb',
@@ -96,7 +98,6 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 				flags: FileRepo::OVERWRITE | FileRepo::SKIP_LOCKING
 			);
 		}
-
 		// make sure storing the file worked
 		if ( !$storageResult->isGood() ) {
 			$this->setLastError( sprintf( 'storing file failed: %s', $this->getTitle()->getDBkey() ) );
@@ -113,6 +114,10 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		int $height
 	): bool {
 		$inputFilePath = $inputFile->getLocalRefPath();
+		if ( $inputFilePath === false ) {
+			$this->setLastError( sprintf( 'getting local file reference failed: %s', $this->params['fileName'] ) );
+			return false;
+		}
 		// if the file needs to be resized
 		if ( $width != 0 || $height != 0 ) {
 			// create a temporary file to output the resized file into
@@ -131,7 +136,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 
 		// run avifenc
 		$command = MediaWikiServices::getInstance()->getShellCommandFactory()->create();
-		$command->unsafeParams( [
+		$command->unsafeParams(
 			self::getExtensionConfig()->get( 'AVIFExecutablePath' ),
 			// from https://web.dev/articles/compress-images-avif#create_an_avif_image_with_default_settings
 			'--min 0',
@@ -143,7 +148,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 			'-a tune=ssim',
 			$inputFilePath,
 			$outputFilePath,
-		] );
+		);
 		try {
 			$result = $command->execute();
 		} catch ( Exception $exception ) {
