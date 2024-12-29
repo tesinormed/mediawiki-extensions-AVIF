@@ -40,7 +40,7 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 		$height = $thumbnail->getHeight();
 		// get the path and virtual URL of the potentially existing thumbnail
 		$avifThumbnailPath = $thumbnailFile->getThumbRel(
-			suffix: $thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif'
+			$thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif'
 		);
 		$avifThumbnailVirtualUrl = $this->repoGroup->getLocalRepo()->getZonePath( 'thumb' ) . '/' . $avifThumbnailPath;
 
@@ -56,7 +56,8 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 		} else {
 			// process the thumbnail for next time
 			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'title' => $thumbnail->getFile()->getTitle(),
+				'namespace' => NS_FILE,
+				'title' => $thumbnailFile->getTitle()->getDBkey(),
 				'width' => $width,
 				'height' => $height,
 			] ) );

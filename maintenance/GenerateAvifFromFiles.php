@@ -5,7 +5,6 @@ namespace MediaWiki\Extension\AVIF\Maintenance;
 use Maintenance;
 use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
 use MediaWiki\MediaWikiServices;
-use MediaWiki\Title\Title;
 
 $IP = getenv( 'MW_INSTALL_PATH' );
 if ( $IP === false ) {
@@ -47,7 +46,8 @@ class GenerateAvifFromFiles extends Maintenance {
 		foreach ( $files as $title ) {
 			$this->output( "queued $title\n" );
 			$jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'title' => Title::makeTitleSafe( NS_FILE, $title ),
+				'namespace' => NS_FILE,
+				'title' => $title,
 			] ) );
 		}
 	}

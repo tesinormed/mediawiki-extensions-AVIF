@@ -2,16 +2,17 @@
 
 namespace MediaWiki\Extension\AVIF\Hook;
 
+use IDBAccessObject;
 use JobQueueGroup;
 use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
 use MediaWiki\Hook\FileDeleteCompleteHook;
 use MediaWiki\Hook\FileUndeleteCompleteHook;
+use MediaWiki\Hook\FileUploadHook;
 use MediaWiki\Hook\PageMoveCompleteHook;
-use MediaWiki\Hook\UploadCompleteHook;
 use RepoGroup;
 
 class FileHooks implements
-	UploadCompleteHook,
+	FileUploadHook,
 	PageMoveCompleteHook,
 	FileDeleteCompleteHook,
 	FileUndeleteCompleteHook
@@ -25,10 +26,10 @@ class FileHooks implements
 	}
 
 	/** @inheritDoc */
-	public function onUploadComplete( $uploadBase ): void {
+	public function onFileUpload( $file, $reupload, $hasDescription ): void {
 		// make sure the file is supported to be transformed
 		if ( !in_array(
-			needle: $uploadBase->getLocalFile()->getMimeType(),
+			needle: $file->getMimeType(),
 			haystack: AvifTransformJob::SUPPORTED_MIME_TYPES,
 			strict: true
 		) ) {
@@ -37,7 +38,8 @@ class FileHooks implements
 
 		// run the job
 		$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-			'title' => $uploadBase->getTitle(),
+			'namespace' => NS_FILE,
+			'title' => $file->getTitle()->getDBkey(),
 		] ) );
 	}
 
@@ -63,8 +65,8 @@ class FileHooks implements
 		}
 
 		// load the files
-		$oldFile->load();
-		$newFile->load();
+		$oldFile->load( IDBAccessObject::READ_LATEST );
+		$newFile->load( IDBAccessObject::READ_LATEST );
 
 		// check if an AVIF version exists
 		$oldAvifFilePath = $oldFile->getPath() . '.avif';
@@ -133,7 +135,8 @@ class FileHooks implements
 
 			// regenerate the AVIF version
 			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'title' => $title,
+				'namespace' => NS_FILE,
+				'title' => $title->getDBkey(),
 			] ) );
 		}
 	}

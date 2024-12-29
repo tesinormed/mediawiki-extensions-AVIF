@@ -33,8 +33,8 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 	];
 
 	public function __construct( array $params ) {
-		$this->removeDuplicates = true;
 		parent::__construct( self::COMMAND, $params );
+		$this->removeDuplicates = true;
 	}
 
 	public function run(): bool {
@@ -56,11 +56,11 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		/** @var LocalRepo $localFileRepository */
 		$localFileRepository = MediaWikiServices::getInstance()->getRepoGroup()->getLocalRepo();
 		$localFile = $localFileRepository->findFile(
-			$this->params['title'],
+			$this->getTitle(),
 			[ 'ignoreRedirect' => true, 'latest' => true ]
 		);
 		if ( $localFile === false ) {
-			$this->setLastError( sprintf( 'file not found: %s', $this->params['title'] ) );
+			$this->setLastError( sprintf( 'file not found: %s', $this->getTitle()->getDBkey() ) );
 			return false;
 		}
 		$localFile->load( IDBAccessObject::READ_LATEST );
@@ -70,7 +70,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		$height = $this->params['height'] ?? 0;
 
 		// make a temporary file to store the converted file in
-		$temporaryFile = $this->createTemporaryFile( 'avif' );
+		$temporaryFile = self::createTemporaryFile( 'avif' );
 
 		// transform the file, make sure it worked
 		if ( !$this->transformFile( $localFile, $temporaryFile->getPath(), $width, $height ) ) {
@@ -78,20 +78,28 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		}
 
 		// store the transformed file with .avif appended
-		$storageResult = $localFileRepository->store(
-			$temporaryFile,
-			( $width == 0 && $height == 0 ) ? 'public' : 'thumb',
-			( $width == 0 && $height == 0 )
-				? $localFile->getRel() . '.avif'
-				: $localFile->getThumbRel(
+		if ( $width == 0 && $height == 0 ) {
+			// original file
+			$storageResult = $localFileRepository->store(
+				$temporaryFile,
+				dstZone: 'public',
+				dstRel: $localFile->getRel() . '.avif',
+				flags: FileRepo::OVERWRITE | FileRepo::SKIP_LOCKING
+			);
+		} else {
+			$storageResult = $localFileRepository->store(
+				$temporaryFile,
+				dstZone: 'thumb',
+				dstRel: $localFile->getThumbRel(
 					$localFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif'
 				),
-			FileRepo::OVERWRITE_SAME | FileRepo::SKIP_LOCKING
-		);
+				flags: FileRepo::OVERWRITE | FileRepo::SKIP_LOCKING
+			);
+		}
 
 		// make sure storing the file worked
 		if ( !$storageResult->isGood() ) {
-			$this->setLastError( sprintf( 'storing file failed: %s', $this->params['title'] ) );
+			$this->setLastError( sprintf( 'storing file failed: %s', $this->getTitle()->getDBkey() ) );
 			return false;
 		}
 
@@ -108,7 +116,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		// if the file needs to be resized
 		if ( $width != 0 || $height != 0 ) {
 			// create a temporary file to output the resized file into
-			$temporaryFile = $this->createTemporaryFile( $inputFile->getExtension() );
+			$temporaryFile = self::createTemporaryFile( $inputFile->getExtension() );
 			// resize the file
 			try {
 				$image = new Imagick( $inputFile->getLocalRefPath() );
@@ -124,7 +132,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		// run avifenc
 		$command = MediaWikiServices::getInstance()->getShellCommandFactory()->create();
 		$command->unsafeParams( [
-			$this->getExtensionConfig()->get( 'AVIFExecutablePath' ),
+			self::getExtensionConfig()->get( 'AVIFExecutablePath' ),
 			// from https://web.dev/articles/compress-images-avif#create_an_avif_image_with_default_settings
 			'--min 0',
 			'--max 63',
@@ -147,12 +155,12 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		return $result->getExitCode() === 0;
 	}
 
-	private function getExtensionConfig(): Config {
+	private static function getExtensionConfig(): Config {
 		return MediaWikiServices::getInstance()->getConfigFactory()
 			->makeConfig( 'avif' );
 	}
 
-	private function createTemporaryFile( string $fileExtension ): FSFile {
+	private static function createTemporaryFile( string $fileExtension ): FSFile {
 		return MediaWikiServices::getInstance()->getTempFSFileFactory()
 			->newTempFSFile( self::COMMAND . '_', $fileExtension );
 	}
