@@ -1,6 +1,6 @@
 {
 	"name": "AVIF",
-	"version": "0.3.3",
+	"version": "0.4.0",
 	"author": [
 		"tesinormed"
 	],
@@ -11,7 +11,6 @@
 	"requires": {
 		"MediaWiki": ">= 1.42.0",
 		"extensions": {
-			"Thumbro": "*"
 		},
 		"platform": {
 			"php": ">= 8.1",
@@ -36,28 +35,13 @@
 				"JobQueueGroup",
 				"RepoGroup"
 			]
-		},
-		"bitmap": {
-			"class": "MediaWiki\\Extension\\AVIF\\Hook\\BitmapHooks",
-			"services": [
-				"JobQueueGroup"
-			]
-		},
-		"thumbnail": {
-			"class": "MediaWiki\\Extension\\AVIF\\Hook\\ThumbnailHooks",
-			"services": [
-				"RepoGroup",
-				"JobQueueGroup"
-			]
 		}
 	},
 	"Hooks": {
 		"UploadComplete": "file",
 		"PageMoveComplete": "file",
 		"FileDeleteComplete": "file",
-		"FileUndeleteComplete": "file",
-		"BitmapHandlerTransform": "bitmap",
-		"ThumbroBeforeProduceHtml": "thumbnail"
+		"FileUndeleteComplete": "file"
 	},
 	"JobClasses": {
 		"AvifTransform": "MediaWiki\\Extension\\AVIF\\Job\\AvifTransformJob"
