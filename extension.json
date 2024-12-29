@@ -1,6 +1,6 @@
 {
 	"name": "AVIF",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"author": [
 		"tesinormed"
 	],
@@ -52,7 +52,7 @@
 		}
 	},
 	"Hooks": {
-		"FileUpload": "file",
+		"UploadComplete": "file",
 		"PageMoveComplete": "file",
 		"FileDeleteComplete": "file",
 		"FileUndeleteComplete": "file",
