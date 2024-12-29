@@ -6,8 +6,8 @@ use File;
 use JobQueueGroup;
 use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
 use MediaWiki\Extension\Thumbro\Hooks\ThumbroBeforeProduceHtmlHook;
-use MediaWiki\Extension\Thumbro\ThumbroThumbnailImage;
 use RepoGroup;
+use ThumbnailImage;
 
 /** @noinspection PhpUnused */
 class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
@@ -20,7 +20,7 @@ class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 	}
 
 	/** @inheritDoc */
-	public function onThumbroBeforeProduceHtml( ThumbroThumbnailImage $thumbnail, array &$sources ): void {
+	public function onThumbroBeforeProduceHtml( ThumbnailImage $thumbnail, array &$sources ): void {
 		// don't use a thumbnail for a source file image
 		if ( $thumbnail->fileIsSource() ) {
 			return;
@@ -40,8 +40,7 @@ class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 		$width = $thumbnail->getWidth();
 		$height = $thumbnail->getHeight();
 		// get the path and virtual URL of the potentially existing thumbnail
-		$avifThumbnailName = preg_replace( '/(\.webp|\.avif)$/', '',
-				$thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) ) . '.avif';
+		$avifThumbnailName = $thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif';
 		$avifThumbnailPath = $thumbnailFile->getThumbRel( $avifThumbnailName );
 		$avifThumbnailVirtualUrl = $this->repoGroup->getLocalRepo()->getZonePath( 'thumb' ) . '/' . $avifThumbnailPath;
 
@@ -57,7 +56,7 @@ class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 		} else {
 			// process the thumbnail for next time
 			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'fileName' => $avifThumbnailName,
+				'fileName' => $thumbnailFile->getName(),
 				'width' => $width,
 				'height' => $height,
 			] ) );
