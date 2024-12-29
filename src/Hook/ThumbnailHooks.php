@@ -41,7 +41,8 @@ class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 		$height = $thumbnail->getHeight();
 		// get the path and virtual URL of the potentially existing thumbnail
 		$avifThumbnailPath = $thumbnailFile->getThumbRel(
-			$thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif'
+			preg_replace( '/(\.webp|\.avif)$/', '',
+				$thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) ) . '.avif'
 		);
 		$avifThumbnailVirtualUrl = $this->repoGroup->getLocalRepo()->getZonePath( 'thumb' ) . '/' . $avifThumbnailPath;
 
