@@ -5,12 +5,12 @@ namespace MediaWiki\Extension\AVIF\Hook;
 use File;
 use JobQueueGroup;
 use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
-use MediaWiki\Extension\PictureHtmlSupport\Hook\PictureHtmlSupportBeforeProduceHtml;
+use MediaWiki\Extension\Thumbro\Hooks\ThumbroBeforeProduceHtmlHook;
+use MediaWiki\Extension\Thumbro\ThumbroThumbnailImage;
 use RepoGroup;
-use ThumbnailImage;
 
 /** @noinspection PhpUnused */
-class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
+class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 	private RepoGroup $repoGroup;
 	private JobQueueGroup $jobQueueGroup;
 
@@ -20,7 +20,7 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 	}
 
 	/** @inheritDoc */
-	public function onPictureHtmlSupportBeforeProduceHtml( ThumbnailImage $thumbnail, array &$sources ): void {
+	public function onThumbroBeforeProduceHtml( ThumbroThumbnailImage $thumbnail, array &$sources ): void {
 		// don't use a thumbnail for a source file image
 		if ( $thumbnail->fileIsSource() ) {
 			return;
