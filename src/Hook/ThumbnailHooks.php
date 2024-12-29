@@ -40,10 +40,9 @@ class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 		$width = $thumbnail->getWidth();
 		$height = $thumbnail->getHeight();
 		// get the path and virtual URL of the potentially existing thumbnail
-		$avifThumbnailPath = $thumbnailFile->getThumbRel(
-			preg_replace( '/(?:\.webp|\.avif)(?:\?[0-9]{14})?$/', '',
-				$thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) ) . '.avif'
-		);
+		$avifThumbnailName = preg_replace( '/(\.webp|\.avif)$/', '',
+				$thumbnailFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) ) . '.avif';
+		$avifThumbnailPath = $thumbnailFile->getThumbRel( $avifThumbnailName );
 		$avifThumbnailVirtualUrl = $this->repoGroup->getLocalRepo()->getZonePath( 'thumb' ) . '/' . $avifThumbnailPath;
 
 		// if the thumbnail exists
@@ -58,7 +57,7 @@ class ThumbnailHooks implements ThumbroBeforeProduceHtmlHook {
 		} else {
 			// process the thumbnail for next time
 			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'fileName' => $thumbnailFile->getName(),
+				'fileName' => $avifThumbnailName,
 				'width' => $width,
 				'height' => $height,
 			] ) );
