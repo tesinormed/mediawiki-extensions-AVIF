@@ -1,6 +1,6 @@
-# RawCSS
+# AVIF
 
-A MediaWiki extension which automatically generates AVIF versions of images and thumbnails
+A MediaWiki extension which automatically generates AVIF versions of images
 
 ## System administrator guide
 
