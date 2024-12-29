@@ -46,7 +46,7 @@ class GenerateAvifFromFiles extends Maintenance {
 		$jobQueueGroup = MediaWikiServices::getInstance()->getJobQueueGroupFactory()->makeJobQueueGroup();
 		foreach ( $files as $title ) {
 			$this->output( "queued $title\n" );
-			$jobQueueGroup->push( new AvifTransformJob( [
+			$jobQueueGroup->lazyPush( new AvifTransformJob( [
 				'title' => Title::makeTitleSafe( NS_FILE, $title ),
 			] ) );
 		}

@@ -25,7 +25,7 @@ class BitmapHooks implements BitmapHandlerTransformHook {
 		}
 
 		// run the job
-		$this->jobQueueGroup->push( new AvifTransformJob( [
+		$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
 			'title' => $image->getTitle(),
 			'width' => $scalerParams['physicalWidth'],
 			'height' => $scalerParams['physicalHeight'],

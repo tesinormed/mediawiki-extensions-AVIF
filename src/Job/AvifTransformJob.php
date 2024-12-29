@@ -7,6 +7,7 @@ use File;
 use FileRepo;
 use FSFile;
 use GenericParameterJob;
+use IDBAccessObject;
 use Imagick;
 use ImagickException;
 use Job;
@@ -62,6 +63,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 			$this->setLastError( sprintf( 'file not found: %s', $this->params['title'] ) );
 			return false;
 		}
+		$localFile->load( IDBAccessObject::READ_LATEST );
 
 		// get the parameters
 		$width = $this->params['width'] ?? 0;
@@ -78,13 +80,13 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		// store the transformed file with .avif appended
 		$storageResult = $localFileRepository->store(
 			$temporaryFile,
-			$width == 0 ? 'public' : 'thumb',
-			$width == 0
+			( $width == 0 && $height == 0 ) ? 'public' : 'thumb',
+			( $width == 0 && $height == 0 )
 				? $localFile->getRel() . '.avif'
 				: $localFile->getThumbRel(
-					suffix: $localFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif'
+					$localFile->thumbName( [ 'width' => $width ], File::THUMB_FULL_NAME ) . '.avif'
 				),
-			FileRepo::OVERWRITE | FileRepo::SKIP_LOCKING
+			FileRepo::OVERWRITE_SAME | FileRepo::SKIP_LOCKING
 		);
 
 		// make sure storing the file worked

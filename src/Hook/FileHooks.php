@@ -10,7 +10,12 @@ use MediaWiki\Hook\FileUploadHook;
 use MediaWiki\Hook\PageMoveCompleteHook;
 use RepoGroup;
 
-class FileHooks implements FileUploadHook, PageMoveCompleteHook, FileDeleteCompleteHook, FileUndeleteCompleteHook {
+class FileHooks implements
+	FileUploadHook,
+	PageMoveCompleteHook,
+	FileDeleteCompleteHook,
+	FileUndeleteCompleteHook
+{
 	private JobQueueGroup $jobQueueGroup;
 	private RepoGroup $repoGroup;
 
@@ -31,7 +36,7 @@ class FileHooks implements FileUploadHook, PageMoveCompleteHook, FileDeleteCompl
 		}
 
 		// run the job
-		$this->jobQueueGroup->push( new AvifTransformJob( [
+		$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
 			'title' => $file->getTitle(),
 		] ) );
 	}
@@ -127,7 +132,7 @@ class FileHooks implements FileUploadHook, PageMoveCompleteHook, FileDeleteCompl
 			}
 
 			// regenerate the AVIF version
-			$this->jobQueueGroup->push( new AvifTransformJob( [
+			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
 				'title' => $title,
 			] ) );
 		}

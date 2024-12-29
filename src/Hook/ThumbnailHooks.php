@@ -55,7 +55,7 @@ class ThumbnailHooks implements PictureHtmlSupportBeforeProduceHtml {
 			];
 		} else {
 			// process the thumbnail for next time
-			$this->jobQueueGroup->push( new AvifTransformJob( [
+			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
 				'title' => $thumbnail->getFile()->getTitle(),
 				'width' => $width,
 				'height' => $height,
