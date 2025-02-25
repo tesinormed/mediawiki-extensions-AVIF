@@ -57,11 +57,11 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 		/** @var LocalRepo $localFileRepository */
 		$localFileRepository = $repoGroup->getLocalRepo();
 		$localFile = $repoGroup->findFile(
-			$this->params['fileName'],
+			$this->params['title'],
 			[ 'ignoreRedirect' => true, 'latest' => true ]
 		);
 		if ( $localFile === false ) {
-			$this->setLastError( sprintf( 'file not found: %s', $this->params['fileName'] ) );
+			$this->setLastError( sprintf( 'file not found: %s', $this->params['title'] ) );
 			return false;
 		}
 		$localFile->load( IDBAccessObject::READ_LATEST );
@@ -115,7 +115,7 @@ class AvifTransformJob extends Job implements GenericParameterJob {
 	): bool {
 		$inputFilePath = $inputFile->getLocalRefPath();
 		if ( $inputFilePath === false ) {
-			$this->setLastError( sprintf( 'getting local file reference failed: %s', $this->params['fileName'] ) );
+			$this->setLastError( sprintf( 'getting local file reference failed: %s', $this->params['title'] ) );
 			return false;
 		}
 		// if the file needs to be resized

@@ -39,7 +39,8 @@ class FileHooks implements
 
 		// run the job
 		$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-			'fileName' => $uploadBase->getLocalFile()->getName(),
+			'namespace' => NS_FILE,
+			'title' => $uploadBase->getLocalFile()->getTitle(),
 		] ) );
 	}
 
@@ -135,7 +136,8 @@ class FileHooks implements
 
 			// regenerate the AVIF version
 			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'fileName' => $file->getName(),
+				'namespace' => NS_FILE,
+				'title' => $file->getTitle(),
 			] ) );
 		}
 	}
