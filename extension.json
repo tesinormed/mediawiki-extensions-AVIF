@@ -1,6 +1,6 @@
 {
 	"name": "AVIF",
-	"version": "0.4.2",
+	"version": "0.5.0",
 	"author": [
 		"tesinormed"
 	],
@@ -38,10 +38,8 @@
 		}
 	},
 	"Hooks": {
-		"UploadComplete": "file",
 		"PageMoveComplete": "file",
-		"FileDeleteComplete": "file",
-		"FileUndeleteComplete": "file"
+		"FileDeleteComplete": "file"
 	},
 	"JobClasses": {
 		"AvifTransform": "MediaWiki\\Extension\\AVIF\\Job\\AvifTransformJob"

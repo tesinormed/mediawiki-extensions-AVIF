@@ -4,19 +4,14 @@ namespace MediaWiki\Extension\AVIF\Hook;
 
 use IDBAccessObject;
 use JobQueueGroup;
-use MediaWiki\Extension\AVIF\Job\AvifTransformJob;
 use MediaWiki\Hook\FileDeleteCompleteHook;
-use MediaWiki\Hook\FileUndeleteCompleteHook;
 use MediaWiki\Hook\PageMoveCompleteHook;
-use MediaWiki\Hook\UploadCompleteHook;
 use RepoGroup;
 
 /** @noinspection PhpUnused */
 class FileHooks implements
-	UploadCompleteHook,
 	PageMoveCompleteHook,
-	FileDeleteCompleteHook,
-	FileUndeleteCompleteHook
+	FileDeleteCompleteHook
 {
 	private JobQueueGroup $jobQueueGroup;
 	private RepoGroup $repoGroup;
@@ -24,24 +19,6 @@ class FileHooks implements
 	public function __construct( JobQueueGroup $jobQueueGroup, RepoGroup $repoGroup ) {
 		$this->jobQueueGroup = $jobQueueGroup;
 		$this->repoGroup = $repoGroup;
-	}
-
-	/** @inheritDoc */
-	public function onUploadComplete( $uploadBase ): void {
-		// make sure the file is supported to be transformed
-		if ( !in_array(
-			needle: $uploadBase->getLocalFile()->getMimeType(),
-			haystack: AvifTransformJob::SUPPORTED_MIME_TYPES,
-			strict: true
-		) ) {
-			return;
-		}
-
-		// run the job
-		$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-			'namespace' => NS_FILE,
-			'title' => $uploadBase->getLocalFile()->getTitle(),
-		] ) );
 	}
 
 	/** @inheritDoc */
@@ -113,32 +90,6 @@ class FileHooks implements
 				// delete the directory if it's empty
 				$fileRepository->cleanDir( $file->getHashPath() );
 			}
-		}
-	}
-
-	/** @inheritDoc */
-	public function onFileUndeleteComplete( $title, $fileVersions, $user, $reason ): void {
-		// find the undeleted file
-		$file = $this->repoGroup->findFile(
-			$title,
-			[ 'ignoreRedirect' => true, 'latest' => true ]
-		);
-		// and if it exists
-		if ( $file !== false ) {
-			// make sure the file is supported to be transformed
-			if ( !in_array(
-				needle: $file->getMimeType(),
-				haystack: AvifTransformJob::SUPPORTED_MIME_TYPES,
-				strict: true
-			) ) {
-				return;
-			}
-
-			// regenerate the AVIF version
-			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'namespace' => NS_FILE,
-				'title' => $file->getTitle(),
-			] ) );
 		}
 	}
 }
