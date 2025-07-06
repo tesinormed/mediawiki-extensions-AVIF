@@ -4,5 +4,8 @@
 			"tesinormed"
 		]
 	},
-	"avif-desc": "{{desc|name=AVIF|url=https://www.mediawiki.org/wiki/Extension:AVIF}}"
+	"avif-desc": "{{desc|name=AVIF|url=https://www.mediawiki.org/wiki/Extension:AVIF}}",
+	"action-aviftransform": "{{doc-action|aviftransform}}",
+	"right-aviftransform": "{{doc-right|aviftransform}}",
+	"special-avif": "{{doc-special|AVIF}}"
 }

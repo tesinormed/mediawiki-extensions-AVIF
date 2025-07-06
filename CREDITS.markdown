@@ -1,0 +1,1 @@
+- [Octfx](https://github.com/octfx) for creating the [WebP](https://github.com/octfx/mediawiki-extension-WebP) extension

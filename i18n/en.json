@@ -4,5 +4,9 @@
 			"tesinormed"
 		]
 	},
-	"avif-desc": "Automatic generation of AVIF versions of images"
+	"avif-desc": "Convert JPEG, PNG, and WebP images to AVIF on demand",
+	"action-aviftransform": "convert JPEG, PNG, and WebP images to AVIF",
+	"right-aviftransform": "Convert JPEG, PNG, and WebP images to AVIF",
+	"special-avif": "Convert JPEG, PNG, and WebP images to AVIF on demand",
+	"special-avif-files": "Files"
 }
