@@ -16,21 +16,21 @@ class ManualAvifTransform extends Maintenance {
 	public function __construct() {
 		parent::__construct();
 		$this->requireExtension( 'AVIF' );
-		$this->addOption( 'file', 'File(s) to regenerate AVIF versions of', multiOccurrence: true, required: true );
+		$this->addOption( 'file', 'File(s) to regenerate AVIF versions of', required: true, multiOccurrence: true );
 	}
 
 	public function execute(): void {
 		$this->output( "queueing AVIF file generation jobs...\n" );
 
-		$files = $this->getOption( 'file' );
-
-		$jobQueueGroup = MediaWikiServices::getInstance()->getJobQueueGroup();
-		foreach ( $files as $title ) {
-			$this->output( "queued $title\n" );
-			$jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'namespace' => NS_FILE,
-				'title' => $title,
-			] ) );
+		$jobQueueGroup = MediaWikiServices::getInstance()->getJobQueueGroupFactory()
+			->makeJobQueueGroup();
+		$jobFactory = MediaWikiServices::getInstance()->getJobFactory();
+		foreach ( $this->getOption( 'file' ) as $file ) {
+			$this->output( "queued $file\n" );
+			$jobQueueGroup->push( $jobFactory->newJob(
+				AvifTransformJob::COMMAND,
+				[ 'filename' => $file ]
+			) );
 		}
 	}
 }

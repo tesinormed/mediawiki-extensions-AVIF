@@ -1,6 +1,6 @@
 {
 	"name": "AVIF",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"author": [
 		"tesinormed"
 	],
@@ -41,7 +41,15 @@
 		"FileDeleteComplete": "file"
 	},
 	"JobClasses": {
-		"AvifTransform": "MediaWiki\\Extension\\AVIF\\AvifTransformJob"
+		"AvifTransform": {
+			"class": "MediaWiki\\Extension\\AVIF\\AvifTransformJob",
+			"services": [
+				"ConfigFactory",
+				"RepoGroup",
+				"TempFSFileFactory"
+			],
+			"needsPage": false
+		}
 	},
 	"AvailableRights": [
 		"aviftransform"
@@ -58,7 +66,8 @@
 		"AVIF": {
 			"class": "MediaWiki\\Extension\\AVIF\\SpecialAvif",
 			"services": [
-				"JobQueueGroup"
+				"JobQueueGroupFactory",
+				"JobFactory"
 			]
 		}
 	},

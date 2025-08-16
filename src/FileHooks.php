@@ -7,10 +7,7 @@ use MediaWiki\Hook\PageMoveCompleteHook;
 use RepoGroup;
 
 class FileHooks implements PageMoveCompleteHook, FileDeleteCompleteHook {
-	private RepoGroup $repoGroup;
-
-	public function __construct( RepoGroup $repoGroup ) {
-		$this->repoGroup = $repoGroup;
+	public function __construct( private readonly RepoGroup $repoGroup ) {
 	}
 
 	/**
@@ -59,6 +56,11 @@ class FileHooks implements PageMoveCompleteHook, FileDeleteCompleteHook {
 	 * @inheritDoc
 	 */
 	public function onFileDeleteComplete( $file, $oldimage, $article, $user, $reason ): void {
+		if ( $oldimage !== null ) {
+			// only work with all-revision file deletions
+			return;
+		}
+
 		$fileRepository = $file->getRepo();
 		$avifFilePath = $file->getPath() . '.avif';
 

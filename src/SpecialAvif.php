@@ -3,16 +3,21 @@
 namespace MediaWiki\Extension\AVIF;
 
 use JobQueueGroup;
+use MediaWiki\JobQueue\JobFactory;
+use MediaWiki\JobQueue\JobQueueGroupFactory;
 use MediaWiki\Message\Message;
 use MediaWiki\SpecialPage\FormSpecialPage;
 
 class SpecialAvif extends FormSpecialPage {
-	private JobQueueGroup $jobQueueGroup;
+	private readonly JobQueueGroup $jobQueueGroup;
 
-	public function __construct( JobQueueGroup $jobQueueGroup ) {
+	public function __construct(
+		JobQueueGroupFactory $jobQueueGroupFactory,
+		private readonly JobFactory $jobFactory
+	) {
 		parent::__construct( 'AVIF', restriction: 'aviftransform' );
 
-		$this->jobQueueGroup = $jobQueueGroup;
+		$this->jobQueueGroup = $jobQueueGroupFactory->makeJobQueueGroup();
 	}
 
 	/** @inheritDoc */
@@ -39,10 +44,10 @@ class SpecialAvif extends FormSpecialPage {
 
 		$result = '';
 		foreach ( explode( "\n", $data['files'] ) as $file ) {
-			$this->jobQueueGroup->lazyPush( new AvifTransformJob( [
-				'namespace' => NS_FILE,
-				'title' => str_replace( ' ', '_', $file ),
-			] ) );
+			$this->jobQueueGroup->push( $this->jobFactory->newJob(
+				AvifTransformJob::COMMAND,
+				[ 'filename' => $file ]
+			) );
 			$result .= "*[[:File:$file|$file]]\n";
 		}
 		$output->addWikiTextAsInterface( $result );
