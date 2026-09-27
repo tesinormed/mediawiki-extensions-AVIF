@@ -53,8 +53,15 @@ class AvifTransformJob extends Job {
 
 		// transform the file, make sure it worked
 		try {
-			Image::newFromFile( $localFile->getPath() )
-				->writeToFile( $temporaryFile->getPath(), $this->config->get( 'AVIFSaveOptions' ) );
+			$image = Image::newFromFile( $localFile->getPath() );
+
+			foreach ( $image->getFields() as $imageField ) {
+				if ( $imageField !== 'icc-profile-data' ) {
+					$image->remove( $imageField );
+				}
+			}
+
+			$image->writeToFile( $temporaryFile->getPath(), $this->config->get( 'AVIFSaveOptions' ) );
 		} catch ( Exception $exception ) {
 			$this->setLastError( "transforming file failed: {$exception->getMessage()}" );
 			return false;
