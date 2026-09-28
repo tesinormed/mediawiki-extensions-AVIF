@@ -11,8 +11,7 @@
 	"requires": {
 		"MediaWiki": ">= 1.43.0",
 		"platform": {
-			"php": ">= 8.1",
-			"ext-ffi": "*"
+			"php": ">= 8.1"
 		}
 	},
 	"AutoloadNamespaces": {
